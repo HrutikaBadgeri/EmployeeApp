@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+.form-div {
+  margin: 0 auto;
+  border: 2px solid pink;
+  padding: 30px;
+  font-family: "Poppins", sans-serif;
+  font-weight: bold;
+  box-shadow: white;
+}
