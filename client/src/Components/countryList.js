@@ -1,18 +1,37 @@
-const countryList = {
-  India: {
-    Karnataka: ["Bangalore", "Mysore", "Belgaum"],
-    Maharashtra: ["Mumbai", "Pune", "Nashik"],
-    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
+const countryList = [
+  {
+    name: "India",
+    states: [
+      {
+        name: "Maharashtra",
+        cities: ["Mumbai", "Pune", "Nagpur", "Nashik"],
+      },
+      {
+        name: "Karnataka",
+        cities: ["Banglore", "Mysore", "Hubli", "Manglore"],
+      },
+      {
+        name: "Gujrat",
+        cities: ["Gandhinagar", "Ahmedabad", "Surat", "Vadodara"],
+      },
+    ],
   },
-  "United States": {
-    California: ["Los Angeles", "San Francisco", "San Diego"],
-    "New York": ["New York City", "Buffalo", "Albany"],
-    Texas: ["Houston", "Dallas", "Austin"],
+  {
+    name: "USA",
+    states: [
+      {
+        name: "California",
+        cities: ["	Los Angeles", "	San Diego", "San Jose", "Malibu"],
+      },
+      {
+        name: "Texas",
+        citites: ["Houston", "San Antonio	", "Dallas", "Frisco"],
+      },
+      {
+        name: "Florida",
+        cities: ["Jacksonville", "Miami", "Tampa", "Orlando"],
+      },
+    ],
   },
-  "United Kingdom": {
-    England: ["London", "Manchester", "Birmingham"],
-    Scotland: ["Edinburgh", "Glasgow", "Aberdeen"],
-    Wales: ["Cardiff", "Swansea", "Newport"],
-  },
-};
+];
 export default countryList;

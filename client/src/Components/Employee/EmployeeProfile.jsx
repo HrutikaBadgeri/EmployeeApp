@@ -42,7 +42,7 @@ const EmployeeProfile = () => {
         }
       );
       console.log(res);
-      alert("Details update successfully");
+      alert("Details updated successfully");
     } catch (error) {
       console.log(error);
     }

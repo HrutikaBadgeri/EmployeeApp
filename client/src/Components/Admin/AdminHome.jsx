@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useEffect } from "react";
+
+import { Link } from "react-router-dom";
 const AdminHome = () => {
   const [users, setUsers] = useState([]);
   useEffect(() => {
@@ -72,6 +74,16 @@ const AdminHome = () => {
                   onClick={() => DeleteEmployee(user._id)}
                 >
                   Delete
+                </button>
+              </td>
+              <td>
+                <button type="button" class="btn btn-secondary">
+                  <Link
+                    style={{ textDecoration: "none", color: "white" }}
+                    to="/adminUpdateProfile"
+                  >
+                    Update
+                  </Link>
                 </button>
               </td>
             </tr>

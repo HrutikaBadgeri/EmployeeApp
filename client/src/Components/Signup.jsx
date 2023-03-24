@@ -1,38 +1,44 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
 import "../Components/css/login.css";
+import Dropdown from "react-bootstrap/Dropdown";
+import DropdownButton from "react-bootstrap/DropdownButton";
 import Login from "./Login";
-import { Link } from "react-router-dom";
-import { Col } from "react-bootstrap";
-import {
-  CountryDropdown,
-  RegionDropdown,
-  CountryRegionData,
-} from "react-country-region-selector";
+import countryList from "./countryList";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 const Signup = () => {
-  const [selectedcountry, setSelectedCountry] = useState("");
-  const [selectedstate, setSelectedState] = useState("");
-  const [selectedcity, setSelectedCity] = useState("");
+  //for dynamic changing of the countries, city and state
+  const [selectedCountry, setSelectedCountry] = useState("---Country---");
+  const [selectedState, setSelectedState] = useState("---State---");
+  const [selectedCity, setSelectedCity] = useState("---City---");
 
-  const handleCountryChange = (e) => {
-    setSelectedCountry(e.target.value);
-    setSelectedState("");
-    setSelectedCity("");
+  const [selectedStates, setSelectedStates] = useState([]);
+  const [selectedCities, setSelectedCities] = useState([]);
+  //change in country functions
+  const changeCountry = (event) => {
+    setSelectedCountry(event.target.value);
+    setSelectedStates(
+      countryList.find((ctr) => ctr.name === event.target.value).states
+    );
+  };
+  //change in state functions
+  const changeState = (event) => {
+    setSelectedState(event.target.value);
+    setSelectedCities(
+      selectedStates.find(
+        (selectedState) => selectedState.name === event.target.value
+      ).cities
+    );
   };
 
-  const handleStateChange = (e) => {
-    setSelectedState(e.target.value);
-    setSelectedCity("");
-  };
-
-  const handleCityChange = (e) => {
+  //change in city functions
+  const changeCity = (e) => {
     setSelectedCity(e.target.value);
   };
-
+  //setting variables for sending data to the backend
   const [name, setName] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
@@ -40,10 +46,13 @@ const Signup = () => {
   const [salary, setSalary] = useState();
   const [contact, setContact] = useState();
   const [gender, setGender] = useState();
-  const [country, setCountry] = useState();
-  const [city, setCity] = useState();
-  const [state, setState] = useState();
 
+  // //assigning the value to country, state and city
+  // setCountry(selectedCountry);
+  // setState(selectedState);
+  // setCity(selectedCity);
+
+  //to send data to the backend and navigate back to the login page
   const navigate = useNavigate();
   const registerUser = async () => {
     let url = "http://localhost:3000/api/v1/employee/signup";
@@ -55,11 +64,10 @@ const Signup = () => {
     obj.employeeSalary = salary;
     obj.employeeContact = contact;
     obj.employeeGender = gender;
-    obj.employeeCountry = country;
-    obj.employeeState = state;
-    obj.employeeCity = city;
+    obj.employeeCountry = selectedCountry;
+    obj.employeeState = selectedState;
+    obj.employeeCity = selectedCity;
     console.log(obj);
-    // JSON.stringify(obj);
     if (obj.employeeAge < 10) {
       alert("Age must be greater than 10 years.");
       return;
@@ -144,7 +152,7 @@ const Signup = () => {
             />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Gener</Form.Label>
+            <Form.Label>Gender</Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter Male/Female/Others"
@@ -152,47 +160,64 @@ const Signup = () => {
             />
           </Form.Group>
 
-          {/* <Form.Group className="mb-3">
+          <Form.Group className="mb-3">
             <Form.Label>Country</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Country"
+            <br />
+            <select
+              style={{
+                width: "500px",
+                height: "35px",
+              }}
+              className="address-dropdown"
               value={selectedCountry}
-              onChange={(e) => setCountry(e.target.value)}
-            />
-          </Form.Group> */}
-          <Form.Group as={Col} controlId="formGridCountry">
-            <Form.Label>Country</Form.Label>
-            <Form.Control
-              as="select"
-              value={country}
               onChange={(e) => {
-                handleCountryChange, setCountry(e.target.value);
+                changeCountry(e);
               }}
             >
               <option>Select Country</option>
-              <option value="india">India</option>
-              <option value="usa">USA</option>
-              <option value="china">China</option>
-            </Form.Control>
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>State</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="State"
-              onChange={(e) => setState(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>City</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="City"
-              onChange={(e) => setCity(e.target.value)}
-            />
+              {countryList.map((ctr) => (
+                <option value={ctr.name}>{ctr.name}</option>
+              ))}
+            </select>
           </Form.Group>
 
+          <Form.Group className="mb-3">
+            <Form.Label>State</Form.Label>
+            <br />
+            <select
+              style={{
+                width: "500px",
+                height: "35px",
+                borderRadius: "2px",
+              }}
+              value={selectedState}
+              onChange={(e) => {
+                changeState(e);
+              }}
+            >
+              <option>Select State</option>
+              {selectedStates.map((selectedState) => (
+                <option value={selectedState.name}>{selectedState.name}</option>
+              ))}
+            </select>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>City</Form.Label>
+            <br />
+            <select
+              style={{ width: "500px", height: "35px" }}
+              value={selectedCity}
+              onChange={(e) => {
+                changeCity(e);
+              }}
+            >
+              <option>Select City</option>
+              {selectedCities.map((selectedCity) => (
+                <option value={selectedCity}>{selectedCity}</option>
+              ))}
+            </select>
+          </Form.Group>
           <button
             style={{ marginLeft: "200px" }}
             onClick={(e) => {
@@ -207,5 +232,4 @@ const Signup = () => {
     </div>
   );
 };
-
 export default Signup;

@@ -10,3 +10,6 @@ body {
   font-weight: bold;
   box-shadow: white;
 }
+.address-dropdown::placeholder {
+  color: grey;
+}
