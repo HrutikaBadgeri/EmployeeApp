@@ -86,12 +86,10 @@ const Login = () => {
           </button>
           <button onClick={() => userLogin("admin")}>Admin Login</button>
           <br />
-          <p>
-            Don't have an account?
-            <Link to="/signup">
-              <p>Signup</p>
-            </Link>
-          </p>
+          <p>Don't have an account?</p>
+          <Link to="/signup">
+            <p>Signup</p>
+          </Link>
         </div>
       </div>
     </div>

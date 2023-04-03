@@ -10,6 +10,10 @@ const AdminHome = () => {
   const [value, setValue] = useState("");
   const [users, setUsers] = useState([]);
   const [count, setCount] = useState(0);
+  const [submit, setSubmit] = useState(false);
+
+  const [formErrors, setFormErrors] = useState({});
+  const [searchError, setSearchError] = useState("");
 
   //constructor
   useEffect(() => {
@@ -19,6 +23,12 @@ const AdminHome = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    if (Object.keys(formErrors).length === 0 && submit) {
+      searchEmployee();
+    }
+  }, [formErrors]);
+
   //load function
   async function Load() {
     const varToken = localStorage.getItem("token");
@@ -27,7 +37,6 @@ const AdminHome = () => {
         Authorization: "Bearer " + varToken,
       },
     });
-    console.log(result.data.data.emp);
     setUsers(result.data.data.emp);
   }
 
@@ -66,8 +75,13 @@ const AdminHome = () => {
         },
       }
     );
+
+    if (res.data.data.emp.length === 0) {
+      setSearchError("No employee found");
+    } else {
+      setSearchError("");
+    }
     setUsers(res.data.data.emp);
-    console.log(res.data.data.emp);
   }
 
   //logout function
@@ -100,7 +114,11 @@ const AdminHome = () => {
         Authorization: "Bearer " + varToken,
       },
     });
-    console.log(res.data.data.emp);
+    if (res.data.data.emp.length === 0) {
+      setSearchError("No employee found");
+    } else {
+      setSearchError("");
+    }
     setUsers(res.data.data.emp);
   }
   return (
@@ -114,22 +132,43 @@ const AdminHome = () => {
         <h6>Search an Employee: </h6>
         <input
           style={{ width: "350px" }}
-          type="text"
           value={value}
           placeholder="Enter name or email to search"
           onChange={(e) => {
+            if (!e.target.value) {
+              setFormErrors((current) => {
+                const { searchtext, ...rest } = current;
+                return rest;
+              });
+            } else if (!isNaN(e.target.value)) {
+              setFormErrors({
+                ...formErrors,
+                searchtext: "Name/Email should not be a number",
+              });
+            } else {
+              setFormErrors((current) => {
+                const { searchtext, ...rest } = current;
+                return rest;
+              });
+            }
             setValue(e.target.value);
           }}
-        ></input>
+        />
         <button
           style={{ marginLeft: "40px", padding: "10px" }}
           onClick={(e) => {
             e.preventDefault();
-            searchEmployee();
+            setSubmit(true);
+            if (Object.keys(formErrors).length === 0 && submit) {
+              searchEmployee();
+            } else {
+              alert("Please enter a valid value to search");
+            }
           }}
         >
           Search
         </button>
+        <p style={{ color: "red" }}>{formErrors.searchtext}</p>
       </form>
 
       <br />
@@ -196,11 +235,13 @@ const AdminHome = () => {
         ))}
       </table>
 
+      <p>{searchError}</p>
+
       {Array.from({ length: Math.ceil(count / 5) }, (_, i) => i + 1).map(
         (num) => (
           <button
+            key={num}
             onClick={() => {
-              console.log("Hello");
               updateState(num);
             }}
           >
