@@ -5,7 +5,11 @@ import Signup from "./Components/Signup";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import AdminHome from "./Components/Admin/AdminHome";
 import EmployeeProfile from "./Components/Employee/EmployeeProfile";
+import EmployeeUploadFile from "./Components/Employee/EmployeeUploadFile";
+import EmployeeUpdateFile from "./Components/Employee/EmployeeUpdateFile";
 import AdminUpdateProfile from "./Components/Admin/AdminUpdateProfile";
+import AdminViewFiles from "./Components/Admin/AdminViewFiles";
+import AdminUpdateFile from "./Components/Admin/AdminUpdateFile";
 
 function App() {
   return (
@@ -15,17 +19,21 @@ function App() {
         <Route exact path="/signup" element={<Signup />} />
 
         {/* employee routes */}
-        <Route exact path="employee" element={<EmployeeHome />} />
+        <Route exact path="employee/view" element={<EmployeeHome />} />
         <Route exact path="updateProfile" element={<EmployeeProfile />} />
+        <Route exact path="uploadFile" element={<EmployeeUploadFile />} />
+        <Route exact path="updateFile" element={<EmployeeUpdateFile />} />
         {/* end of employee routes */}
 
         {/* admin routes */}
-        <Route exact path="admin" element={<AdminHome />} />
+        <Route exact path="/admin/view" element={<AdminHome />} />
         <Route
           exact
           path="adminUpdateProfile"
           element={<AdminUpdateProfile />}
         />
+        <Route exact path="adminViewFiles" element={<AdminViewFiles />} />
+        <Route exact path="adminUpdateFile" element={<AdminUpdateFile />} />
         {/* end of admin routes */}
       </Routes>
     </BrowserRouter>

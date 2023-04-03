@@ -16,6 +16,7 @@ const protect = asyncWrapper(async (req, res, next) => {
     token = req.cookies.token;
   }
   //checking if token exists
+  console.log(token);
   if (!token) {
     return res
       .status(401)

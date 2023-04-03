@@ -2,6 +2,8 @@ import Admin from "../models/Admin";
 import Employee from "../models/Employee";
 import asyncWrapper from "../middleware/async";
 import mongoose from "mongoose";
+import path, { dirname } from "path";
+import fs from "fs";
 
 //@description login an admin
 //@route POST /api/v1/admin/login
@@ -21,15 +23,21 @@ export const adminLogin = asyncWrapper(async (req, res) => {
   //check if admin exists in the database
   const admin = await Admin.findOne({ adminEmail });
   if (!admin) {
-    return res
-      .status(401)
-      .json({ message: "admin with this creds does not exist" });
+    return res.status(401).json({
+      success: false,
+      errorIn: "email",
+      message: "Employee with this email does not exist",
+    });
   }
 
   //check if password matches the hashed password in database
   const isMatch = await admin.matchPassword(adminPassword);
   if (!isMatch) {
-    return res.status(401).json({ message: "Incorrect Password" });
+    return res.status(401).json({
+      success: false,
+      errorIn: "password",
+      message: "Incorrect Password",
+    });
   }
   sendTokenResponse(admin, 200, res);
 });
@@ -52,22 +60,58 @@ export const adminLogout = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ success: true, data: {} });
 });
 
-// @description show all emp details to admin
-// @route POST /api/v1/admin/getEmpDetails
+// @description returns total number of employees
+// @route POST /api/v1/admin/count
+// @access public
+export const employeeCount = asyncWrapper(async (req, res) => {
+  const count = await Employee.estimatedDocumentCount();
+  if (!count) {
+    res.status(404).json({ message: "count cannot be fetched" });
+  }
+  res.status(200).json({ message: "Count fetched", data: { count } });
+});
+
+// @description show and search all emp details to admin
+// @route POST /api/v1/admin/view
 // @access public
 export const viewEmpDetails = asyncWrapper(async (req, res) => {
-  const page = req.query.p || 0;
-  const employeePerPage = 3;
+  const page = req.query.p || 1;
+  const employeePerPage = 5;
 
-  let emp = await Employee.find()
-    .skip(page * employeePerPage)
+  let obj = {};
+  if (req.params.key) {
+    obj = {
+      $or: [
+        { employeeName: { $regex: req.params.key } },
+        { employeeEmail: { $regex: req.params.key } },
+      ],
+    };
+  }
+
+  let emp = await Employee.find(obj)
+    .skip((page - 1) * employeePerPage)
     .limit(employeePerPage);
   if (!emp) {
     return res
       .status(404)
-      .json({ status: false, message: "Employee not found", data: {} });
+      .json({ status: false, message: "Employee not found" });
   }
   return res.status(200).json({ status: true, success: true, data: { emp } });
+});
+
+// @description show a single emp details to admin
+// @route POST /api/v1/admin/viewSingleEmployee
+// @access public
+export const viewSignleEmployee = asyncWrapper(async (req, res) => {
+  const ObjectId = mongoose.Types.ObjectId;
+  const empid = new ObjectId(req.params.id);
+  let emp = await Employee.findById(empid);
+  if (!emp) {
+    return res.status(401).json({ message: "Employee with this id not found" });
+  }
+  return res
+    .status(200)
+    .json({ message: "Employee found successfully", data: emp });
 });
 
 //@description delete employee
@@ -77,9 +121,13 @@ export const deleteEmployee = asyncWrapper(async (req, res) => {
   const empid = req.params.id;
   let emp = await Employee.findByIdAndDelete(empid);
   if (!emp) {
-    return res.status(401).json({ message: "Employee with this id not found" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Employee with this id not found" });
   }
-  return res.status(200).json({ message: "Employee deleted successfully" });
+  return res
+    .status(200)
+    .json({ success: true, message: "Employee deleted successfully" });
 });
 
 //@description update employee details
@@ -143,23 +191,92 @@ export const updateEmployee = asyncWrapper(async (req, res) => {
   });
 });
 
-//@description search employee
-//@route GET /api/admin/search/:key
-//@access private
-export const searchEmployee = asyncWrapper(async (req, res) => {
-  const emp_data = await Employee.find({
-    $or: [
-      { employeeName: { $regex: req.params.key } },
-      { employeeEmail: { $regex: req.params.key } },
-    ],
-  });
-  if (!emp_data) {
+export const viewEmployeeFiles = asyncWrapper(async (req, res) => {
+  const ObjectId = mongoose.Types.ObjectId;
+  const id = new ObjectId(req.params.id);
+  let emp = await Employee.findById(id);
+  if (!emp) {
     return res
       .status(401)
-      .json({ message: "Could not find employee with this name" });
+      .json({ success: false, message: "employee with this  id not found" });
   }
-  return res.status(200).json({ message: "Employee found", data: emp_data });
+  return res.status(200).json({
+    message: "employee files found",
+    success: true,
+    data: emp.files,
+  });
 });
+
+export const deleteEmployeeFile = asyncWrapper(async (req, res) => {
+  const ObjectId = mongoose.Types.ObjectId;
+  const fileid = new ObjectId(req.params.fileId);
+  const employeeId = new ObjectId(req.params.employeeId);
+  const updatedEmployee = await Employee.updateOne(
+    { _id: employeeId },
+    { $pull: { files: { _id: fileid } } }
+  );
+
+  if (updatedEmployee.nModified === 0) {
+    // If no documents were modified, return an error
+    return res.status(404).json({ message: "File not found" });
+  }
+
+  res.status(200).json({
+    message: "File deleted successfully",
+    employee: updatedEmployee,
+  });
+});
+
+export const updateEmployeeFile = asyncWrapper(async (req, res) => {
+  const ObjectId = mongoose.Types.ObjectId;
+  const fileid = new ObjectId(req.params.fileId);
+  const employeeId = new ObjectId(req.params.employeeId);
+  const __dirname = dirname(new URL(import.meta.url).pathname).substring(1);
+  const updatedEmployee = await Employee.updateOne(
+    { _id: employeeId, "files._id": fileid },
+    {
+      $set: {
+        "files.$.contentType": req.file.mimeType,
+        "files.$.data": fs.readFileSync(
+          path.join(
+            __dirname.split("/").slice(0, -1).join("/") +
+              "/uploads/" +
+              req.file.filename
+          )
+        ),
+        "files.$.name": req.file.filename,
+      },
+    }
+  );
+
+  if (updatedEmployee.nModified === 0) {
+    return res.status(404).json({ success: false, message: "File not found" });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "File updated successfully",
+    employee: updatedEmployee,
+  });
+});
+
+//@description search employee by name or email
+//@route GET /api/admin/search/:key
+//@access private
+// export const searchEmployee = asyncWrapper(async (req, res) => {
+//   const emp_data = await Employee.find({
+//     $or: [
+//       { employeeName: { $regex: req.params.key } },
+//       { employeeEmail: { $regex: req.params.key } },
+//     ],
+//   });
+//   if (!emp_data) {
+//     return res
+//       .status(401)
+//       .json({ message: "Could not find employee with this name" });
+//   }
+//   return res.status(200).json({ message: "Employee found", data: emp_data });
+// });
 //Get token from model, create a cookie and send response
 const sendTokenResponse = (admin, statusCode, res) => {
   //create a token
@@ -171,7 +288,6 @@ const sendTokenResponse = (admin, statusCode, res) => {
     expires: expireTime,
     httpOnly: false,
   };
-  console.log(expireTime);
   res.status(statusCode).cookie("token", token, options).json({
     success: true,
     token,

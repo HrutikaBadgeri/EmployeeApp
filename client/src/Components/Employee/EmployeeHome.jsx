@@ -35,6 +35,10 @@ const EmployeeHome = () => {
         <Link to="/updateProfile">
           <button style={{ marginLeft: "50px" }}>Update Profile</button>
         </Link>
+
+        <Link to="/uploadFile">
+          <button style={{ marginLeft: "50px" }}>Upload File</button>
+        </Link>
       </div>
     </div>
   );

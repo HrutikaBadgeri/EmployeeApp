@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import fileSchema from "../models/Files";
 const EmployeeSchema = new mongoose.Schema({
   employeeName: {
     type: String,
@@ -24,7 +25,7 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     required: [true],
     maxlength: [15, "password cannot be more than 10 characters"],
-    minlength: [7, "password cannot be less then 7 characters"],
+    minlength: [4, "password cannot be less then 4 characters"],
   },
   employeeAge: {
     type: Number,
@@ -66,6 +67,7 @@ const EmployeeSchema = new mongoose.Schema({
     trim: true,
     required: [true],
   },
+  files: [fileSchema],
 });
 
 //Hashing the password before storing it in the database

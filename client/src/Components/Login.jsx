@@ -3,7 +3,6 @@ import axios from "axios";
 import "../Components/css/login.css";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import Signup from "./Signup";
 import { useNavigate } from "react-router-dom";
 const Login = () => {
   const navigate = useNavigate();
@@ -25,10 +24,18 @@ const Login = () => {
       console.log(res);
       localStorage.setItem("token", res.data.token);
       if (res.data.success) {
-        navigate("/" + `${name}`);
+        navigate("/" + `${name}` + "/view");
       }
     } catch (error) {
-      console.log(error);
+      const res = error.response;
+      if (!res.data.success) {
+        if (res.data.errorIn === "email") {
+          alert("EmailID does not exist");
+        }
+        if (res.data.errorIn === "password") {
+          alert("Incorrect Password");
+        }
+      }
     }
   };
   return (

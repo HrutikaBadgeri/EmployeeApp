@@ -6,20 +6,71 @@ import { useEffect } from "react";
 
 import { Link } from "react-router-dom";
 const AdminHome = () => {
+  //setting the value for search funtion
+  const [value, setValue] = useState("");
   const [users, setUsers] = useState([]);
+  const [count, setCount] = useState(0);
+
+  //constructor
   useEffect(() => {
-    (async () => await Load())();
+    (async () => {
+      await Load();
+      await LoadCount();
+    })();
   }, []);
+
+  //load function
   async function Load() {
-    const result = await axios.get("http://localhost:3000/api/v1/admin/view");
+    const varToken = localStorage.getItem("token");
+    const result = await axios.get("http://localhost:3000/api/v1/admin/view", {
+      headers: {
+        Authorization: "Bearer " + varToken,
+      },
+    });
+    console.log(result.data.data.emp);
     setUsers(result.data.data.emp);
-    console.log(result.data);
   }
+
+  //counts the number of employees in the database
+  async function LoadCount() {
+    const varToken = localStorage.getItem("token");
+    const res = await axios.get("http://localhost:3000/api/v1/admin/count", {
+      headers: {
+        Authorization: "Bearer " + varToken,
+      },
+    });
+    setCount(res.data.data.count);
+    //6 employees and 3 per page, 6/3 = 2 pages
+  }
+
+  //delete function
   async function DeleteEmployee(id) {
-    await axios.delete("http://localhost:3000/api/v1/admin/delete/" + id);
+    const varToken = localStorage.getItem("token");
+    await axios.delete("http://localhost:3000/api/v1/admin/delete/" + id, {
+      headers: {
+        Authorization: "Bearer " + varToken,
+      },
+    });
     alert("Employee deleted Successfully");
     Load();
   }
+
+  //search function
+  async function searchEmployee() {
+    const varToken = localStorage.getItem("token");
+    const res = await axios.get(
+      "http://localhost:3000/api/v1/admin/view/" + value,
+      {
+        headers: {
+          Authorization: "Bearer " + varToken,
+        },
+      }
+    );
+    setUsers(res.data.data.emp);
+    console.log(res.data.data.emp);
+  }
+
+  //logout function
   const navigate = useNavigate();
   const adminLogout = async () => {
     try {
@@ -37,11 +88,53 @@ const AdminHome = () => {
     }
   };
 
+  //update state to next employees function
+  async function updateState(num) {
+    const varToken = localStorage.getItem("token");
+    const page = num;
+    const res = await axios.get("http://localhost:3000/api/v1/admin/view/", {
+      params: {
+        p: page,
+      },
+      headers: {
+        Authorization: "Bearer " + varToken,
+      },
+    });
+    console.log(res.data.data.emp);
+    setUsers(res.data.data.emp);
+  }
   return (
     <div>
       <h3>Welcome to Admin Portal</h3>
+      <br />
       <button onClick={adminLogout}>Logout</button>
-      <table class="table table-dark" align="center">
+      <br />
+      <br />
+      <form>
+        <h6>Search an Employee: </h6>
+        <input
+          style={{ width: "350px" }}
+          type="text"
+          value={value}
+          placeholder="Enter name or email to search"
+          onChange={(e) => {
+            setValue(e.target.value);
+          }}
+        ></input>
+        <button
+          style={{ marginLeft: "40px", padding: "10px" }}
+          onClick={(e) => {
+            e.preventDefault();
+            searchEmployee();
+          }}
+        >
+          Search
+        </button>
+      </form>
+
+      <br />
+      <br />
+      <table className="table table-dark" align="center">
         <thead>
           <tr>
             <th scope="col">Emp Name</th>
@@ -56,7 +149,7 @@ const AdminHome = () => {
           </tr>
         </thead>
         {users.map((user) => (
-          <tbody>
+          <tbody key={user.employeeEmail}>
             <tr>
               <th scope="row">{user.employeeName} </th>
               <td>{user.employeeEmail}</td>
@@ -70,19 +163,31 @@ const AdminHome = () => {
               <td>
                 <button
                   type="button"
-                  class="btn btn-danger"
+                  className="btn btn-danger"
                   onClick={() => DeleteEmployee(user._id)}
                 >
                   Delete
                 </button>
               </td>
               <td>
-                <button type="button" class="btn btn-secondary">
+                <button type="button" className="btn btn-secondary">
                   <Link
                     style={{ textDecoration: "none", color: "white" }}
                     to="/adminUpdateProfile"
+                    state={{ data: user._id }}
                   >
                     Update
+                  </Link>
+                </button>
+              </td>
+              <td>
+                <button type="button" className="btn btn-secondary">
+                  <Link
+                    style={{ textDecoration: "none", color: "white" }}
+                    to="/adminViewFiles"
+                    state={{ data: user._id }}
+                  >
+                    Files
                   </Link>
                 </button>
               </td>
@@ -90,6 +195,19 @@ const AdminHome = () => {
           </tbody>
         ))}
       </table>
+
+      {Array.from({ length: Math.ceil(count / 5) }, (_, i) => i + 1).map(
+        (num) => (
+          <button
+            onClick={() => {
+              console.log("Hello");
+              updateState(num);
+            }}
+          >
+            {num}
+          </button>
+        )
+      )}
     </div>
   );
 };
