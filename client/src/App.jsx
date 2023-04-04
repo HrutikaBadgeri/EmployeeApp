@@ -10,6 +10,7 @@ import EmployeeUpdateFile from "./Components/Employee/EmployeeUpdateFile";
 import AdminUpdateProfile from "./Components/Admin/AdminUpdateProfile";
 import AdminViewFiles from "./Components/Admin/AdminViewFiles";
 import AdminUpdateFile from "./Components/Admin/AdminUpdateFile";
+import AdminPreviewFile from "./Components/Admin/AdminPreviewFile";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         />
         <Route exact path="adminViewFiles" element={<AdminViewFiles />} />
         <Route exact path="adminUpdateFile" element={<AdminUpdateFile />} />
+        <Route exact path="adminPreviewFile" element={<AdminPreviewFile />} />
         {/* end of admin routes */}
       </Routes>
     </BrowserRouter>

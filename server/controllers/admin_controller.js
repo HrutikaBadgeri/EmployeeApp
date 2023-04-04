@@ -207,6 +207,31 @@ export const viewEmployeeFiles = asyncWrapper(async (req, res) => {
   });
 });
 
+//read buffer data from the backend
+//convert the buffer data to base64
+//send the base64 data to the frontend
+//convert the base64 data to blob
+//download the blob
+export const downloadEmployeeFile = asyncWrapper(async (req, res) => {
+  const ObjectId = mongoose.Types.ObjectId;
+  const fileid = new ObjectId(req.params.fileId);
+  const employeeId = new ObjectId(req.params.employeeId);
+  const employee = await Employee.findById(employeeId);
+  if (!employee) {
+    return res.status(404).json({ message: "Employee not found" });
+  }
+  const file = employee.files.id(fileid);
+  if (!file) {
+    return res.status(404).json({ message: "File not found" });
+  }
+  const buffer = file.data;
+  const base64 = buffer.toString("base64");
+  res.status(200).json({
+    message: "File downloaded successfully",
+    file: base64,
+  });
+});
+
 export const deleteEmployeeFile = asyncWrapper(async (req, res) => {
   const ObjectId = mongoose.Types.ObjectId;
   const fileid = new ObjectId(req.params.fileId);

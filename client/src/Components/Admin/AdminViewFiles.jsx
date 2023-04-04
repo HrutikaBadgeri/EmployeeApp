@@ -56,33 +56,46 @@ const AdminViewFiles = () => {
             <th scope="col">File Names</th>
           </tr>
         </thead>
-        {userFiles.map((file) => (
-          <tbody key={file.name}>
-            <tr>
-              <th scope="row">{file.name} </th>
-              <td>{file.name}</td>
-              <td>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => deleteFile(file._id)}
-                >
-                  Delete
-                </button>
-              </td>
-              <td>
-                <button type="button" className="btn btn-secondary">
-                  <Link
-                    style={{ textDecoration: "none", color: "white" }}
-                    to="/adminUpdateFile"
-                    state={{ fileid: file._id, employeeid: data }}
+        {userFiles.map((file) => {
+          return (
+            <tbody key={file.name}>
+              <tr>
+                <th scope="row">{file.name} </th>
+                <td>{file.name}</td>
+                <td>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => deleteFile(file._id)}
                   >
-                    Update
-                  </Link>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        ))}
+                    Delete
+                  </button>
+                </td>
+                <td>
+                  <button type="button" className="btn btn-secondary">
+                    <Link
+                      style={{ textDecoration: "none", color: "white" }}
+                      to="/adminUpdateFile"
+                      state={{ fileid: file._id, employeeid: data }}
+                    >
+                      Update
+                    </Link>
+                  </button>
+                </td>
+                <td>
+                  <button type="button" className="btn btn-secondary">
+                    <Link
+                      style={{ textDecoration: "none", color: "white" }}
+                      to="/adminPreviewFile"
+                      state={{ data: file }}
+                    >
+                      Preview
+                    </Link>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          );
+        })}
       </table>
     </div>
   );
